@@ -1,6 +1,5 @@
 import http from "node:http";
 import app from "./app.js";
-import { ensureDatabaseExists } from "./config/database.js";
 import { env } from "./config/env.js";
 import { User } from "./models/index.js";
 import { syncDatabase } from "./models/index.js";
@@ -12,7 +11,6 @@ import { initializeSocketServer } from "./sockets/index.js";
 import { logger } from "./utils/logger.js";
 
 async function bootstrap() {
-  await ensureDatabaseExists();
   await syncDatabase();
   await initializeSystemStatus();
 
