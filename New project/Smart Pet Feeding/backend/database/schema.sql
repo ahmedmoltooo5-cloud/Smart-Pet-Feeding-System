@@ -1,0 +1,86 @@
+IF DB_ID(N'SmartPetFeeder') IS NULL
+BEGIN
+  CREATE DATABASE [SmartPetFeeder];
+END;
+GO
+
+USE [SmartPetFeeder];
+GO
+
+IF OBJECT_ID(N'dbo.Users', N'U') IS NULL
+BEGIN
+  CREATE TABLE dbo.Users (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    petName NVARCHAR(120) NOT NULL UNIQUE,
+    petDetails NVARCHAR(MAX) NOT NULL DEFAULT N'',
+    ownerPhone NVARCHAR(30) NOT NULL,
+    passwordHash NVARCHAR(255) NOT NULL,
+    createdAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
+  );
+END;
+GO
+
+IF OBJECT_ID(N'dbo.FeedingHistory', N'U') IS NULL
+BEGIN
+  CREATE TABLE dbo.FeedingHistory (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    userId INT NULL,
+    petName NVARCHAR(120) NOT NULL,
+    feedingType NVARCHAR(20) NOT NULL,
+    feedingTime DATETIME2 NOT NULL,
+    dispenseAmount INT NOT NULL DEFAULT 1,
+    foodLevel INT NULL,
+    status NVARCHAR(30) NOT NULL DEFAULT N'requested',
+    correlationId NVARCHAR(120) NULL UNIQUE,
+    createdAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_FeedingHistory_Users FOREIGN KEY (userId) REFERENCES dbo.Users(id)
+  );
+END;
+GO
+
+IF OBJECT_ID(N'dbo.SensorLogs', N'U') IS NULL
+BEGIN
+  CREATE TABLE dbo.SensorLogs (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    foodLevel INT NOT NULL,
+    petDetected BIT NOT NULL,
+    systemStatus NVARCHAR(60) NOT NULL,
+    createdAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
+  );
+END;
+GO
+
+IF OBJECT_ID(N'dbo.Schedules', N'U') IS NULL
+BEGIN
+  CREATE TABLE dbo.Schedules (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    userId INT NOT NULL,
+    feedingTime NVARCHAR(5) NOT NULL,
+    enabled BIT NOT NULL DEFAULT 1,
+    repeatMode NVARCHAR(30) NOT NULL DEFAULT N'daily',
+    lastTriggeredAt DATETIME2 NULL,
+    createdAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    CONSTRAINT FK_Schedules_Users FOREIGN KEY (userId) REFERENCES dbo.Users(id)
+  );
+END;
+GO
+
+IF OBJECT_ID(N'dbo.SystemStatus', N'U') IS NULL
+BEGIN
+  CREATE TABLE dbo.SystemStatus (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    systemEnabled BIT NOT NULL DEFAULT 1,
+    lowFoodAlert BIT NOT NULL DEFAULT 0,
+    lastDispense DATETIME2 NULL,
+    foodLevel INT NOT NULL DEFAULT 100,
+    petDetected BIT NOT NULL DEFAULT 0,
+    mqttConnected BIT NOT NULL DEFAULT 0,
+    statusMessage NVARCHAR(60) NOT NULL DEFAULT N'idle',
+    createdAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME(),
+    updatedAt DATETIME2 NOT NULL DEFAULT SYSUTCDATETIME()
+  );
+END;
+GO
