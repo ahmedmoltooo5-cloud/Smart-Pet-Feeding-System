@@ -4,19 +4,16 @@ import { env } from "./env.js";
 
 function createSequelize(databaseName) {
   return new Sequelize(databaseName, env.db.user, env.db.password, {
-    dialect: "mssql",
-    dialectModule: tedious,
+    dialect: "postgres",
     host: env.db.host,
     port: env.db.port,
     logging: false,
-    dialectOptions: {
-      options: {
-        encrypt: env.db.encrypt,
-        trustServerCertificate: env.db.trustServerCertificate,
-        enableArithAbort: true,
-      },
-    },
-    pool: {
+dialectOptions: {
+  ssl: {
+    require: true,
+    rejectUnauthorized: false,
+  },
+},    pool: {
       max: 10,
       min: 0,
       acquire: 30000,
