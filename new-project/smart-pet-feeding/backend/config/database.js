@@ -26,20 +26,3 @@ const databaseNamePattern = /^[A-Za-z0-9_]+$/;
 
 export const sequelize = createSequelize(env.db.name);
 
-export async function ensureDatabaseExists() {
-  if (!databaseNamePattern.test(env.db.name)) {
-    throw new Error("DB_NAME may only contain letters, numbers, and underscores.");
-  }
-
-  const adminSequelize = createSequelize("master");
-  const escapedName = env.db.name.replaceAll("]", "]]");
-
-  try {
-    await adminSequelize.authenticate();
-    await adminSequelize.query(
-      `IF DB_ID(N'${escapedName}') IS NULL CREATE DATABASE [${escapedName}]`,
-    );
-  } finally {
-    await adminSequelize.close();
-  }
-}
